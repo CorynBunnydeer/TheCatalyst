@@ -1,0 +1,6 @@
+{
+  "CATALYST-SWITCH.description": "Switched cards will be put back in the Draw Pile. A random card from the Draw Pile for each Switched card. Cards obtained this way count as Drawn.",
+  "CATALYST-SWITCH.title": "Switch",
+  "CATALYST-MARK.description": "Marked cards will have their position revealed, counted from the top, when in the Draw Pile. Marking a different card removes the mark from the current marked card.",
+  "CATALYST-MARK.title": "Marked"
+}

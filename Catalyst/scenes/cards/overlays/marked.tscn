@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://Catalyst/images/card_overlays/marked.png" id="1_marked"]
+
+[node name="Marked" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="VisualLayer1" type="Sprite2D" parent="."]
+position = Vector2(0, -15)
+scale = Vector2(0.546823, 0.552133)
+texture = ExtResource("1_marked")
