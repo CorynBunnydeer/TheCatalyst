@@ -19,9 +19,9 @@ internal static class CatalystMarkOverlayPatches
         "res://Catalyst/scenes/cards/overlays/marked.tscn";
     private const string MarkDepthFontPath = "res://Catalyst/fonts/Shojumaru-Regular.ttf";
     private static readonly Vector2 MarkDepthAnchorCenter = new(74f, -58f);
-    private static readonly Color MarkDepthTextColor = new(0.960784f, 0.309804f, 0.815686f, 0.46f);
-    private static readonly Color MarkDepthOutlineColor = new(0.294118f, 0.0313726f, 0.239216f, 0.34f);
-    private static readonly Color MarkDepthShadowColor = new(1f, 0.180392f, 0.717647f, 0.14f);
+    private static readonly Color MarkDepthTextColor = new(0.960784f, 0.309804f, 0.815686f, 0.68f);
+    private static readonly Color MarkDepthOutlineColor = new(0.294118f, 0.0313726f, 0.239216f, 0.52f);
+    private static readonly Color MarkDepthShadowColor = new(1f, 0.180392f, 0.717647f, 0.24f);
     private static FontFile? cachedMarkDepthFont;
 
     [HarmonyPatch(typeof(NCard), "ReloadOverlay")]
@@ -83,7 +83,10 @@ internal static class CatalystMarkOverlayPatches
     {
         Label depthLabel = overlay.GetNodeOrNull<Label>(MarkDepthLabelNodeName) ?? CreateDepthLabel();
         if (depthLabel.GetParent() is null)
+        {
             overlay.AddChild(depthLabel);
+            overlay.MoveChild(depthLabel, 0);
+        }
 
         bool isDrawViewerCard = cardNode.DisplayingPile == PileType.Draw;
         int? drawDepth = isDrawViewerCard ? CatalystMarkSystem.GetDrawDepth(card) : null;

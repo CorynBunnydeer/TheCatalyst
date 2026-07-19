@@ -11,6 +11,8 @@ public class Needle() : CatalystEnlargeablePropCard<Lance>(
     CardType.Attack,
     TargetType.AnyEnemy)
 {
+    public override PropStage Stage => PropStage.Base;
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(2, ValueProp.Move)];
 

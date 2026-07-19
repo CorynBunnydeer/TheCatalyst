@@ -4,7 +4,6 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 
 namespace Catalyst.CatalystCode.Cards.Debug;
 
-/// <summary>Development-only Temperature control.</summary>
 public class HeatPrototype() : CatalystDebugCard(
     0,
     CardType.Skill,
@@ -18,4 +17,10 @@ public class HeatPrototype() : CatalystDebugCard(
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay)
     {
+        await TemperatureSystem.Shift(choiceContext, Owner.Creature, 1, Owner.Creature, this);
+    }
 
+    protected override void OnUpgrade()
+    {
+    }
+}

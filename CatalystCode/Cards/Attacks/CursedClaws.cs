@@ -40,10 +40,10 @@ public class CursedClaws() : CatalystCard(
             this);
         CardModel? selectedCard = selection.FirstOrDefault();
 
-        if (selectedCard is null)
-        {
-            return;
-        }
+            if (selectedCard is null)
+            {
+                return;
+            }
         
         await CatalystMarkSystem.MarkCard(selectedCard);
     }

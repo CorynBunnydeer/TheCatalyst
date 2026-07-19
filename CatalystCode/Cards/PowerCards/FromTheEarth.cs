@@ -15,7 +15,11 @@ public class FromTheEarth() : CatalystCard(
     TargetType.Self)
 {
     protected override IEnumerable<IHoverTip> CanonicalHoverTips =>
-        [CatalystHoverTips.Concentrate, HoverTipFactory.FromPower<GrowPower>(), HoverTipFactory.FromPower<FloatingPower>()];
+    [
+        HoverTipFactory.Static(CatalystKeywords.Concentrate),
+        HoverTipFactory.FromPower<GrowPower>(),
+        HoverTipFactory.FromPower<FloatingPower>()
+    ];
     
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
@@ -28,7 +32,12 @@ public class FromTheEarth() : CatalystCard(
         CardPlay cardPlay)
     {
         await CommonActions.ApplySelf<FromTheEarthPower>(choiceContext, this, 1M);
-        await CommonActions.ApplySelf<FromTheEarthConcentrationPower>(choiceContext, this, 1M);
+        await ConcentrationCmd.Queue(
+            choiceContext,
+            Owner.Creature,
+            ConcentrationEffect.FromTheEarth(1),
+            Owner.Creature,
+            this);
     }
 
     protected override void OnUpgrade()

@@ -1,4 +1,3 @@
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -19,10 +18,10 @@ public class FromTheEarthPower : CatalystPower
         if (Owner.Player != player || Amount <= 0)
             return;
 
-        await PowerCmd.Apply<FromTheEarthConcentrationPower>(
+        await ConcentrationCmd.Queue(
             choiceContext,
             Owner,
-            Amount,
+            ConcentrationEffect.FromTheEarth(Amount),
             Owner,
             null,
             false);

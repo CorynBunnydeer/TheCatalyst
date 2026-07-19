@@ -2,8 +2,8 @@ using BaseLib.Extensions;
 using BaseLib.Utils;
 using Catalyst.CatalystCode.Cards.Tokens.Props;
 using Catalyst.CatalystCode.Powers;
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -12,10 +12,6 @@ using MegaCrit.Sts2.Core.Nodes.CommonUi;
 
 namespace Catalyst.CatalystCode.Cards.Debug;
 
-/// <summary>
-/// Development-only proof of the choice UI between applying Grow to Nanairo and
-/// enlarging an eligible Prop. A real card must establish the conversion source.
-/// </summary>
 public class MassAllocationPrototype() : CatalystDebugCard(
     0,
     CardType.Skill,
@@ -35,4 +31,49 @@ public class MassAllocationPrototype() : CatalystDebugCard(
         ICombatState combatState = CombatState ??
             throw new InvalidOperationException("Mass allocation can only occur during combat.");
 
+        bool canEnlarge = PileType.Hand
+            .GetPile(Owner)
+            .Cards
+            .Any(card => card is IEnlargeableProp);
 
+        List<CardModel> choices =
+        [
+            combatState.CreateCard(ModelDb.Card<MassAllocationGrowChoice>(), Owner)
+        ];
+
+        if (canEnlarge)
+            choices.Add(combatState.CreateCard(ModelDb.Card<MassAllocationPropChoice>(), Owner));
+
+        CardModel? selected = await CardSelectCmd.FromChooseACardScreen(
+            choiceContext,
+            choices,
+            Owner,
+            false);
+
+        if (selected is null)
+            return;
+
+        if (selected is MassAllocationGrowChoice)
+        {
+            await CommonActions.ApplySelf<GrowPower>(
+                choiceContext,
+                this,
+                DynamicVars.Power<GrowPower>().BaseValue);
+            return;
+        }
+
+        CardModel? prop = await CommonActions.SelectSingleCard(
+            this,
+            SelectionScreenPrompt,
+            choiceContext,
+            PileType.Hand,
+            card => card is IEnlargeableProp);
+
+        if (prop is IEnlargeableProp enlargeable)
+            await enlargeable.Enlarge(CardPreviewStyle.HorizontalLayout);
+    }
+
+    protected override void OnUpgrade()
+    {
+    }
+}

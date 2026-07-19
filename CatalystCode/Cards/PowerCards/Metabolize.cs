@@ -17,7 +17,7 @@ namespace Catalyst.CatalystCode.Cards.PowerCards;
 //     Attack example: DynamicVars.Damage.UpgradeValueBy(3);
 //     Block example: DynamicVars.Block.UpgradeValueBy(3);
 // [ ] Add title + description to Catalyst/localization/eng/cards.json
-// [ ] Add card to starter deck or another test path so it can appear in-game
+// [X] Add card to starter deck or another test path so it can appear in-game
 // [ ] Build for code-only changes; publish when localization/images changed
 
 public class Metabolize() : CatalystCard(
@@ -45,7 +45,7 @@ public class Metabolize() : CatalystCard(
 
     protected override void OnUpgrade()
     {
-        this.DynamicVars.Power<GrowPower>().UpgradeValueBy(1M);
-        this.DynamicVars.HpLoss.UpgradeValueBy(-1M);
+        DynamicVars.Power<GrowPower>().UpgradeValueBy(1M);
+        DynamicVars.HpLoss.UpgradeValueBy(-1M);
     }
 }

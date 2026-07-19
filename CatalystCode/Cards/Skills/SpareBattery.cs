@@ -26,7 +26,7 @@ namespace Catalyst.CatalystCode.Cards.Skills;
 {
     public override bool GainsBlock => true;
 
-    protected override IEnumerable<IHoverTip> CanonicalHoverTips => 
+    protected override IEnumerable<IHoverTip> CanonicalHoverTips =>
         HoverTipFactory.FromCardWithCardHoverTips<Battery>(IsUpgraded);
     
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(5M, ValueProp.Move)];

@@ -6,12 +6,25 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Catalyst.CatalystCode.Cards.Tokens.Props;
 
-/// <summary>
-/// The physical casing left after Battery's electrical energy has been converted.
-/// </summary>
 public class DeadBattery() : CatalystPropCard(0, CardType.Attack, TargetType.AnyEnemy)
 {
+    public override PropStage Stage => PropStage.Transformed;
+
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         [CardKeyword.Exhaust];
 
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        [new DamageVar(10, ValueProp.Move)];
 
+    protected override async Task OnPlay(
+        PlayerChoiceContext choiceContext,
+        CardPlay cardPlay)
+    {
+        await CommonActions.CardAttack(this, cardPlay).Execute(choiceContext);
+    }
+
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Damage.UpgradeValueBy(3);
+    }
+}

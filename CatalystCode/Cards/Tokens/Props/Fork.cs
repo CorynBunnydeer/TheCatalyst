@@ -11,7 +11,22 @@ public class Fork() : CatalystEnlargeablePropCard<Trident>(
     CardType.Attack,
     TargetType.AnyEnemy)
 {
+    public override PropStage Stage => PropStage.Base;
+
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         [CardKeyword.Exhaust];
 
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        [new DamageVar(4, ValueProp.Move)];
 
+    protected override async Task OnPlay(
+        PlayerChoiceContext choiceContext,
+        CardPlay cardPlay)
+    {
+        await CommonActions.CardAttack(this, cardPlay).Execute(choiceContext);
+    }
+
+    protected override void OnUpgrade()
+    {
+    }
+}

@@ -1,4 +1,4 @@
-using BaseLib.Utils;
+﻿using BaseLib.Utils;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -27,4 +27,21 @@ public class DefendCatalyst() : CatalystCard(
     }
 
     
+    // ((REFERENCE)) STS2: a BlockVar with Move properties follows the ordinary card
+    // Block pipeline, including Dexterity and other move-Block modifiers.
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(5, ValueProp.Move)];
 
+    protected override async Task OnPlay(
+        PlayerChoiceContext choiceContext,
+        CardPlay cardPlay)
+    {
+        // ((REFERENCE)) BaseLib: CommonActions.CardBlock applies the card's standard
+        // BlockVar to its owner through the current game command API.
+        await CommonActions.CardBlock(this, cardPlay);
+    }
+
+    protected override void OnUpgrade()
+    { 
+        DynamicVars.Block.UpgradeValueBy(3);
+    } 
+}

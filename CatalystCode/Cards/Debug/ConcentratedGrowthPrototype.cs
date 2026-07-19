@@ -1,12 +1,10 @@
 using BaseLib.Extensions;
-using BaseLib.Utils;
+using Catalyst.CatalystCode.Cards.Infrastructure;
 using Catalyst.CatalystCode.Powers;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
-
-using Catalyst.CatalystCode.Cards.Infrastructure;
 
 namespace Catalyst.CatalystCode.Cards.Debug;
 
@@ -19,11 +17,11 @@ public class ConcentratedGrowthPrototype() : CatalystDebugCard(
     CardRarity.Token,
     TargetType.Self)
 {
-    protected override IEnumerable<IHoverTip> CanonicalHoverTips =>
-        [CatalystHoverTips.Concentrate, HoverTipFactory.FromPower<GrowPower>()];
-
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         [CardKeyword.Exhaust];
+
+    protected override IEnumerable<IHoverTip> CanonicalHoverTips =>
+        [HoverTipFactory.Static(CatalystKeywords.Concentrate)];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new PowerVar<GrowPower>(2M)];
@@ -32,4 +30,15 @@ public class ConcentratedGrowthPrototype() : CatalystDebugCard(
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay)
     {
+        await ConcentrationCmd.QueueGrow(
+            choiceContext,
+            Owner.Creature,
+            DynamicVars.Power<GrowPower>().BaseValue,
+            Owner.Creature,
+            this);
+    }
 
+    protected override void OnUpgrade()
+    {
+    }
+}

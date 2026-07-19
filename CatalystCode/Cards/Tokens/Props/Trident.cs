@@ -19,4 +19,10 @@ public class Trident() : CatalystPropCard(1, CardType.Attack, TargetType.AnyEnem
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay)
     {
+        await CommonActions.CardAttack(this, cardPlay).Execute(choiceContext);
+    }
 
+    protected override void OnUpgrade()
+    {
+    }
+}

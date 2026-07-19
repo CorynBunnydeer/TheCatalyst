@@ -1,9 +1,6 @@
 using HarmonyLib;
-using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.Entities.Powers;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 
@@ -19,7 +16,7 @@ internal static class ShrinkPowerPatches
     private static class AmountChangedPatch
     {
         [HarmonyPostfix]
-        private static void RefreshNanairoShrink(PowerModel power)
+        private static void RefreshShrink(PowerModel power)
         {
             if (power is ShrinkPower shrink)
                 MassDifferential.Refresh(shrink.Owner);
@@ -35,7 +32,8 @@ internal static class ShrinkPowerPatches
             // Let vanilla Shrink finish its normal setup, then immediately refresh the
             // owner from Catalyst's mode-aware rules. Fully replacing AfterApplied
             // caused Tail Whip's first Stack-mode Shrink application to crash.
-            if (MassRuleContext.GetMode(__instance) != MassRuleMode.Stack || __instance.Amount <= 0)
+            if (MassRuleContext.GetMode(__instance) != MassRuleMode.Stack ||
+                __instance.Amount <= 0)
                 return;
 
             MassDifferential.Refresh(__instance.Owner, animate: false);
@@ -48,7 +46,7 @@ internal static class ShrinkPowerPatches
         [HarmonyPostfix]
         private static void RefreshAfterRemoval(Creature oldOwner)
         {
-            // ShrinkPower.AfterRemoved supplies oldOwner because the
+            // ((REFERENCE)) STS2: ShrinkPower.AfterRemoved supplies oldOwner because the
             // removed Power may no longer be reachable from the creature's Power list.
             MassDifferential.Refresh(oldOwner);
         }
