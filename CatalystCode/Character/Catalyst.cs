@@ -16,8 +16,6 @@ namespace Catalyst.CatalystCode.Character;
 
 
 
-// ((REFERENCE)) BaseLib: PlaceholderCharacterModel supplies temporary base-game assets
-// while a custom character gradually overrides its gameplay and presentation models.
 public class Catalyst : PlaceholderCharacterModel
 {
     public const string CharacterId = "Catalyst";
@@ -28,8 +26,6 @@ public class Catalyst : PlaceholderCharacterModel
     public override CharacterGender Gender => CharacterGender.Neutral;
     public override int StartingHp => 70;
 
-    // ((REFERENCE)) STS2: CharacterModel.StartingDeck is expressed as canonical models
-    // obtained from ModelDb; the game creates combat card instances from these later.
     public override IEnumerable<CardModel> StartingDeck =>
     [
         ModelDb.Card<StrikeCatalyst>(),
@@ -45,14 +41,11 @@ public class Catalyst : PlaceholderCharacterModel
         ModelDb.Card<TailWhip>()
     ];
 
-    // ((REFERENCE)) STS2: StartingRelics likewise expects canonical RelicModels.
     public override IReadOnlyList<RelicModel> StartingRelics =>
     [
         ModelDb.Relic<BlueSleighBell>()
     ];
 
-    // ((REFERENCE)) BaseLib/STS2: the custom pool classes are registered models, so the
-    // character links to them through the same ModelDb API used by base-game content.
     public override CardPoolModel CardPool => ModelDb.CardPool<CatalystCardPool>();
     public override RelicPoolModel RelicPool => ModelDb.RelicPool<CatalystRelicPool>();
     public override PotionPoolModel PotionPool => ModelDb.PotionPool<CatalystPotionPool>();
@@ -65,8 +58,6 @@ public class Catalyst : PlaceholderCharacterModel
     {
         get
         {
-            // ((REFERENCE)) BaseLib: NodeFactory<T>.CreateFromResource loads the Godot
-            // resource at this mod-relative path and returns the requested node type.
             var icon = NodeFactory<Control>.CreateFromResource(CustomIconTexturePath);
             icon.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             return icon;

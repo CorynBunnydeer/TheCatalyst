@@ -8,39 +8,43 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 
-namespace Catalyst.CatalystCode.Cards.Attacks;
+namespace Catalyst.CatalystCode.Cards.Skills;
 
-/// <summary>Common Attack replacement that exchanges one chosen Hand card.</summary>
-public class SleightOfHand() : CatalystCard(
+/// <summary>Block card that Switches one chosen card from the Hand.</summary>
+public class Obscure() : CatalystCard(
     1,
-    CardType.Attack,
+    CardType.Skill,
     CardRarity.Common,
-    TargetType.AnyEnemy)
+    TargetType.Self)
 {
+    public override bool GainsBlock => true;
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(9M, ValueProp.Move)];
+        [new BlockVar(7M, ValueProp.Move)];
 
     protected override async Task OnPlay(
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay)
     {
-        await CommonActions.CardAttack(this, cardPlay).Execute(choiceContext);
+        await CommonActions.CardBlock(this, cardPlay);
 
         CardSelectorPrefs selectorPrefs = new(SelectionScreenPrompt, 1);
-        IEnumerable<CardModel> selectedCards = await CardSelectCmd.FromHand(
+        IEnumerable<CardModel> selection = await CardSelectCmd.FromHand(
             choiceContext,
             Owner,
             selectorPrefs,
             null,
             null!);
-        CardModel? selectedCard = selectedCards.FirstOrDefault();
+        CardModel? selectedCard = selection.FirstOrDefault();
 
         if (selectedCard is not null)
+        {
             await CatalystCardPileActions.SwitchCard(choiceContext, selectedCard);
+        }
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(3M);
+        DynamicVars.Block.UpgradeValueBy(3M);
     }
 }

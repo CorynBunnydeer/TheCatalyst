@@ -46,8 +46,6 @@ internal static class ShrinkPowerPatches
         [HarmonyPostfix]
         private static void RefreshAfterRemoval(Creature oldOwner)
         {
-            // ((REFERENCE)) STS2: ShrinkPower.AfterRemoved supplies oldOwner because the
-            // removed Power may no longer be reachable from the creature's Power list.
             MassDifferential.Refresh(oldOwner);
         }
     }

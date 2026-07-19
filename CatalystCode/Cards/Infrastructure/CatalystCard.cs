@@ -17,14 +17,8 @@ namespace Catalyst.CatalystCode.Cards.Infrastructure;
 /// This will generate a class that extends this one.
 /// You can also just create the class manually; just make sure to inherit from this class.
 /// </summary>
-// ((REFERENCE)) BaseLib: PoolAttribute registers every derived custom card with
-// CatalystCardPool unless a more-derived class supplies another PoolAttribute (Props
-// override this with STS2's TokenCardPool).
 [Pool(typeof(CatalystCardPool))]
 public abstract class CatalystCard(int cost, CardType type, CardRarity rarity, TargetType target) :
-    // ((REFERENCE)) BaseLib: CustomCardModel is the custom-content replacement for
-    // inheriting CardModel directly. It participates in BaseLib model registration,
-    // localization analysis, custom image paths, and pool injection.
     CustomCardModel(cost, type, rarity, target)
 {
     //Image size:

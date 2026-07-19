@@ -31,9 +31,6 @@ internal static class MassDifferential
         if (MassRuleContext.IsSentinelNormalization)
             return;
 
-        // ((REFERENCE)) Nanairo design: Grow/Shrink cancellation is mod-owned. STS2's
-        // Creature.GetPower<T>() is the standard way to retrieve mutable Power instances
-        // before using PowerCmd.Remove or PowerCmd.ModifyAmount.
         GrowPower? grow = owner.GetPower<GrowPower>();
         ShrinkPower? shrink = owner.GetPower<ShrinkPower>();
 
@@ -77,32 +74,73 @@ internal static class MassDifferential
 
         if (grow.Amount > shrink.Amount)
         {
-            await PowerCmd.Remove(shrink);
-            await PowerCmd.ModifyAmount(
+            await RemoveOrReducePower(
+                choiceContext,
+                shrink,
+                cancelled,
+                applier,
+                cardSource);
+            await RemoveOrReducePower(
                 choiceContext,
                 grow,
-                -cancelled,
+                cancelled,
                 applier,
-                cardSource,
-                false);
+                cardSource);
             return;
         }
 
-        await PowerCmd.Remove(grow);
-        await PowerCmd.ModifyAmount(
+        await RemoveOrReducePower(
+            choiceContext,
+            grow,
+            cancelled,
+            applier,
+            cardSource);
+        await RemoveOrReducePower(
             choiceContext,
             shrink,
-            -cancelled,
+            cancelled,
             applier,
-            cardSource,
-            false);
+            cardSource);
+    }
+
+    internal static async Task ApplyShrinkWithCancellation(
+        PlayerChoiceContext choiceContext,
+        Creature target,
+        decimal amount,
+        Creature? applier,
+        CardModel? cardSource,
+        bool silent = false)
+    {
+        if (amount <= 0M)
+            return;
+
+        GrowPower? grow = target.GetPower<GrowPower>();
+        if (grow is { Amount: > 0 })
+        {
+            decimal cancelled = Math.Min(grow.Amount, amount);
+            await RemoveOrReducePower(
+                choiceContext,
+                grow,
+                cancelled,
+                applier,
+                cardSource);
+            amount -= cancelled;
+        }
+
+        if (amount > 0M)
+        {
+            await PowerCmd.Apply<ShrinkPower>(
+                choiceContext,
+                target,
+                amount,
+                applier,
+                cardSource,
+                silent);
+        }
     }
 
     internal static void Refresh(Creature owner, bool animate = true)
     {
-        // ((REFERENCE)) STS2: DynamicVars are mutable per Power instance. Updating the
-        // DamageIncrease value here makes smartDescription and damage calculation read
-        // the same derived number without replacing the Power model.
         GrowPower? grow = owner.GetPower<GrowPower>();
         ShrinkPower? shrink = owner.GetPower<ShrinkPower>();
 
@@ -121,11 +159,33 @@ internal static class MassDifferential
             animate ? ScaleTweenSeconds : 0D);
     }
 
+    private static async Task RemoveOrReducePower(
+        PlayerChoiceContext choiceContext,
+        PowerModel power,
+        decimal amount,
+        Creature? applier,
+        CardModel? cardSource)
+    {
+        if (amount <= 0M)
+            return;
+
+        if (amount >= power.Amount)
+        {
+            await PowerCmd.Remove(power);
+            return;
+        }
+
+        await PowerCmd.ModifyAmount(
+            choiceContext,
+            power,
+            -amount,
+            applier,
+            cardSource,
+            false);
+    }
+
     internal static void RefreshShrink(ShrinkPower shrink)
     {
-        // ((REFERENCE)) STS2: base Shrink exposes its computed reduction through the
-        // DynamicVar key "DamageDecrease". This key and vanilla 30% value were taken
-        // from MegaCrit.Sts2.Core.Models.Powers.ShrinkPower on the beta branch.
         if (MassRuleContext.GetMode(shrink) != MassRuleMode.Stack || shrink.Amount <= 0)
         {
             shrink.DynamicVars[ShrinkDamageDecreaseKey].BaseValue =
@@ -196,19 +256,12 @@ internal static class MassDifferential
 
     private static void ScaleCreature(Creature owner, float scale, double duration)
     {
-        // ((REFERENCE)) STS2: Vantom is a special case in the base Shrink implementation
-        // and owns visual scaling on its MonsterModel, so it must use Vantom.ScaleTo.
-        // Vantom owns its visual scaling on the model rather than through the ordinary
-        // NCreature path. This mirrors the base game's Shrink implementation.
         if (owner.Monster is Vantom vantom)
         {
             vantom.ScaleTo(scale, (float)duration);
             return;
         }
 
-        // ((REFERENCE)) STS2: ordinary combatants are scaled through their NCreature
-        // node obtained from NCombatRoom.Instance.GetCreatureNode(...), matching the
-        // base Shrink visual path.
         NCombatRoom.Instance?
             .GetCreatureNode(owner)?
             .ScaleTo(scale, duration);

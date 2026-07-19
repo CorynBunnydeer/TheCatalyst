@@ -13,7 +13,4 @@ public abstract class CatalystDebugCard(
     CardRarity rarity,
     TargetType target) : CatalystCard(cost, type, rarity, target)
 {
-    // ((REFERENCE)) BaseLib: PoolAttribute is inherited and permits one value. This
-    // nearer attribute replaces CatalystCard's inherited CatalystCardPool assignment
-    // for every concrete Debug subclass.
 }

@@ -1,5 +1,6 @@
 using BaseLib.Extensions;
 using BaseLib.Utils;
+using Catalyst.CatalystCode.Powers;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -32,7 +33,14 @@ public class DefensiveShrinkPlaceholder() : CatalystDebugCard(
         await CommonActions.CardBlock(this, cardPlay);
 
         if (cardPlay.Target is { } target)
-            await CommonActions.Apply<ShrinkPower>(choiceContext, target, this);
+        {
+            await MassDifferential.ApplyShrinkWithCancellation(
+                choiceContext,
+                target,
+                DynamicVars.Power<ShrinkPower>().BaseValue,
+                Owner.Creature,
+                this);
+        }
     }
 
     protected override void OnUpgrade()

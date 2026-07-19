@@ -15,8 +15,6 @@ public class Lance() : CatalystPropCard(1, CardType.Attack, TargetType.AnyEnemy)
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         [CardKeyword.Exhaust];
 
-    // ((REFERENCE)) STS2: this is the same DamageVar pattern used by ordinary base
-    // Attacks; ValueProp.Move keeps the damage powered and blockable.
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(16, ValueProp.Move)];
 
@@ -24,8 +22,6 @@ public class Lance() : CatalystPropCard(1, CardType.Attack, TargetType.AnyEnemy)
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay)
     {
-        // ((REFERENCE)) BaseLib: CommonActions.CardAttack is preferred over manually
-        // duplicating AttackCommand setup for a conventional single-hit card Attack.
         await CommonActions.CardAttack(this, cardPlay).Execute(choiceContext);
     }
 

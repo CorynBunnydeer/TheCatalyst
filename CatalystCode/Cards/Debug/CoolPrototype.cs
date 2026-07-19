@@ -18,8 +18,6 @@ public class CoolPrototype() : CatalystDebugCard(
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay)
     {
-        // ((REFERENCE)) Nanairo design: cooling uses the same mod-owned Shift operation
-        // as heating with a negative delta, avoiding duplicated boundary logic.
         await TemperatureSystem.Shift(
             choiceContext,
             Owner.Creature,

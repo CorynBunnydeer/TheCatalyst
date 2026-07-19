@@ -4,21 +4,25 @@ using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Catalyst.CatalystCode.Cards.Attacks;
 
-/// <summary>Common Attack replacement that exchanges one chosen Hand card.</summary>
-public class SleightOfHand() : CatalystCard(
-    1,
+/// <summary>Zero-cost Attack that marks one card in the Hand.</summary>
+public class RainbowClaws() : CatalystCard(
+    0,
     CardType.Attack,
     CardRarity.Common,
     TargetType.AnyEnemy)
 {
+    protected override IEnumerable<IHoverTip> CanonicalHoverTips =>
+        [HoverTipFactory.FromKeyword(CatalystKeywords.Mark)];
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(9M, ValueProp.Move)];
+        [new DamageVar(6M, ValueProp.Move)];
 
     protected override async Task OnPlay(
         PlayerChoiceContext choiceContext,
@@ -27,16 +31,16 @@ public class SleightOfHand() : CatalystCard(
         await CommonActions.CardAttack(this, cardPlay).Execute(choiceContext);
 
         CardSelectorPrefs selectorPrefs = new(SelectionScreenPrompt, 1);
-        IEnumerable<CardModel> selectedCards = await CardSelectCmd.FromHand(
+        IEnumerable<CardModel> selection = await CardSelectCmd.FromHand(
             choiceContext,
             Owner,
             selectorPrefs,
             null,
-            null!);
-        CardModel? selectedCard = selectedCards.FirstOrDefault();
+            this);
+        CardModel? selectedCard = selection.FirstOrDefault();
 
         if (selectedCard is not null)
-            await CatalystCardPileActions.SwitchCard(choiceContext, selectedCard);
+            await CatalystMarkSystem.MarkCard(selectedCard);
     }
 
     protected override void OnUpgrade()

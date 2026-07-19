@@ -28,8 +28,8 @@ public class Switcheroo() : CatalystCard(
             false);
 
         CardSelectorPrefs selectorPrefs = new(SelectionScreenPrompt, 2);
-        IReadOnlyList<CardModel> selection = (await CardSelectCmd.FromHand(choiceContext, Owner, selectorPrefs, null, this)).ToList();
-        
+        IReadOnlyList<CardModel> selection = (await CardSelectCmd.FromHand(choiceContext, Owner, selectorPrefs, null, null!)).ToList();
+
         await CatalystCardPileActions.SwitchCards(choiceContext, selection);
     }
 

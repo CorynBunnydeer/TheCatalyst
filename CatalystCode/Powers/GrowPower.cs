@@ -30,9 +30,6 @@ public class GrowPower : CatalystPower
 
     public override bool AllowNegative => true;
 
-    // ((REFERENCE)) STS2: base Shrink uses a negative Amount as an infinite/sentinel
-    // state. Grow mirrors that convention so source-linked infinite effects can retain
-    // the game's established Power semantics.
     public bool IsInfinite => Amount < 0;
 
     public override PowerStackType StackType =>
@@ -46,9 +43,6 @@ public class GrowPower : CatalystPower
 
     public override Task AfterApplied(Creature? applier, CardModel? cardSource)
     {
-        // ((REFERENCE)) STS2: PowerModel.AfterApplied is the standard post-application
-        // hook. We use it to recalculate dynamic values and creature scale after the
-        // game has assigned Owner, Applier, Amount, and other mutable Power state.
         MassDifferential.Refresh(Owner);
         return Task.CompletedTask;
     }
@@ -71,9 +65,6 @@ public class GrowPower : CatalystPower
         Creature? applier,
         CardModel? cardSource)
     {
-        // ((REFERENCE)) STS2: AbstractModel.AfterPowerAmountChanged is emitted for both
-        // initial application and later amount changes. It is therefore safer than
-        // updating visuals only in AfterApplied when stacks can change repeatedly.
         if (power.Owner != Owner || power is not (GrowPower or ShrinkPower))
             return;
 
@@ -91,9 +82,6 @@ public class GrowPower : CatalystPower
         CombatSide side,
         IEnumerable<Creature> participants)
     {
-        // ((REFERENCE)) STS2: AfterSideTurnEnd + participants.Contains(Owner) is the
-        // standard actor-turn duration pattern. PowerCmd.Decrement performs synchronized
-        // amount changes and removes the Power when its normal finite duration expires.
         if (IsInfinite || !participants.Contains(Owner))
             return;
 
@@ -108,9 +96,6 @@ public class GrowPower : CatalystPower
         CardModel? cardSource,
         CardPlay? cardPlay)
     {
-        // ((REFERENCE)) STS2: AbstractModel.ModifyDamageMultiplicative is the current
-        // powered-damage hook. ValuePropExtensions.IsPoweredAttack filters out recoil,
-        // HP loss, and other Unpowered damage. dealer identifies the attacking owner.
         if (Owner != dealer || !props.IsPoweredAttack())
             return 1M;
 

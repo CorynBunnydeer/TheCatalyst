@@ -8,9 +8,6 @@ namespace Catalyst.CatalystCode.Cards.Debug;
 /// </summary>
 public class CatalystDebugCardPool : CatalystCardPool
 {
-    // ((REFERENCE)) BaseLib: custom pools must be character pools or shared pools to
-    // be discovered by ModelDb. Shared keeps these cards out of Catalyst's character
-    // pool while still making them available to the dev console and prototype kit.
     public override bool IsShared => true;
 
     public override string Title => "CatalystDebug";

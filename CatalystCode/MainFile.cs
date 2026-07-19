@@ -6,8 +6,6 @@ using CatalystModel = Catalyst.CatalystCode.Character.Catalyst;
 
 namespace Catalyst.CatalystCode;
 
-// ((REFERENCE)) STS2: ModInitializer marks the static method the game's mod loader
-// invokes after this assembly is loaded.
 [ModInitializer(nameof(Initialize))]
 public partial class MainFile : Node
 {
@@ -22,12 +20,8 @@ public partial class MainFile : Node
         //If you want to use scripts defined in your mod for Godot scenes, uncomment the following line.
         //Godot.Bridge.ScriptManagerBridge.LookupScriptsInAssembly(Assembly.GetExecutingAssembly());
 
-        // ((REFERENCE)) BaseLib: CustomCharacterUtils.TryOrderCustomCharacters registers
-        // the custom character in character-select ordering before play begins.
         CustomCharacterUtils.TryOrderCustomCharacters([typeof(CatalystModel)]);
 
-        // ((REFERENCE)) Harmony: PatchAll scans this assembly for [HarmonyPatch]
-        // classes, including ShrinkPowerPatches.
         Harmony harmony = new(ModId);
 
         harmony.PatchAll();

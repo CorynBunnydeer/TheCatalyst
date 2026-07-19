@@ -1,6 +1,7 @@
 using BaseLib.Extensions;
 using BaseLib.Utils;
 using Catalyst.CatalystCode.Cards.Infrastructure;
+using Catalyst.CatalystCode.Powers;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -28,7 +29,14 @@ public class TailWhip() : CatalystCard(
         await CommonActions.CardAttack(this, cardPlay).Execute(choiceContext);
 
         if (cardPlay.Target is { } target)
-            await CommonActions.Apply<ShrinkPower>(choiceContext, target, this);
+        {
+            await MassDifferential.ApplyShrinkWithCancellation(
+                choiceContext,
+                target,
+                DynamicVars.Power<ShrinkPower>().BaseValue,
+                Owner.Creature,
+                this);
+        }
     }
 
     protected override void OnUpgrade()

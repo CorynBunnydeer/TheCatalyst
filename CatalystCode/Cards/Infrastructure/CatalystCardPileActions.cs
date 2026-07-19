@@ -1,13 +1,24 @@
+using Godot;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Nodes.Cards;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Saves;
+using MegaCrit.Sts2.Core.Settings;
 
 namespace Catalyst.CatalystCode.Cards.Infrastructure;
 
 public static class CatalystCardPileActions
 {
+    private const float DrawPileStageOffset = 360f;
+    private const float MaximumStackSpread = 72f;
+    private const float MaximumStackStep = 18f;
+
     public static async Task<bool> InsertIntoRandomDrawPile(CardModel card)
     {
         CardPileAddResult result = await CardPileCmd.Add(
@@ -17,6 +28,68 @@ public static class CatalystCardPileActions
             null,
             false);
         return result.success;
+    }
+
+    private static async Task StageOutgoingCards(
+        IReadOnlyList<CardModel> outgoingCards)
+    {
+        if (outgoingCards.Count == 0 ||
+            !LocalContext.IsMe(outgoingCards[0].Owner) ||
+            NCombatRoom.Instance is not { } combatRoom)
+        {
+            return;
+        }
+
+        List<NCard> cardNodes = outgoingCards
+            .Select(card => NCard.FindOnTable(card))
+            .Where(node => node is not null &&
+                           GodotObject.IsInstanceValid(node) &&
+                           node.IsInsideTree())
+            .Cast<NCard>()
+            .ToList();
+        if (cardNodes.Count == 0)
+            return;
+
+        float duration = GetPileTweenDuration();
+        float totalStartStagger = cardNodes.Count > 1
+            ? duration * 0.6f
+            : 0f;
+        float startStagger = cardNodes.Count > 1
+            ? totalStartStagger / (cardNodes.Count - 1)
+            : 0f;
+        float stackStep = cardNodes.Count > 1
+            ? Math.Min(MaximumStackStep, MaximumStackSpread / (cardNodes.Count - 1))
+            : 0f;
+        float stackCenter = (cardNodes.Count - 1) * 0.5f;
+
+        Tween tween = combatRoom.CreateTween().SetParallel();
+        for (int index = 0; index < cardNodes.Count; index++)
+        {
+            NCard cardNode = cardNodes[index];
+            float horizontalStackOffset = (index - stackCenter) * stackStep;
+            Vector2 targetPosition =
+                PileType.Play.GetTargetPosition(cardNode) +
+                Vector2.Left * DrawPileStageOffset +
+                Vector2.Right * horizontalStackOffset;
+
+            tween.TweenProperty(cardNode, "position", targetPosition, duration)
+                .SetDelay(index * startStagger)
+                .SetEase(Tween.EaseType.Out)
+                .SetTrans(Tween.TransitionType.Cubic);
+        }
+
+        tween.Play();
+        await tween.AwaitFinished(combatRoom);
+    }
+
+    private static float GetPileTweenDuration()
+    {
+        return SaveManager.Instance.PrefsSave.FastMode switch
+        {
+            FastModeType.Instant => 0.01f,
+            FastModeType.Fast => 0.1f,
+            _ => 0.25f,
+        };
     }
 
     public static async Task<CardModel?> DrawRandom(
@@ -52,6 +125,8 @@ public static class CatalystCardPileActions
         if (!setAsideResult.success)
             return false;
 
+        await StageOutgoingCards([outgoingCard]);
+
         await DrawRandom(choiceContext, outgoingCard.Owner);
 
         return await InsertIntoRandomDrawPile(outgoingCard);
@@ -70,10 +145,6 @@ public static class CatalystCardPileActions
                 "All outgoing cards must have the same owner.",
                 nameof(outgoingCards));
 
-        // Give the played card a moment to finish its own pile movement before the
-        // visible Switch sequence starts moving other cards around.
-        await Cmd.CustomScaledWait(0.15f, 0.25f, false, default);
-
         List<CardModel> setAsideCards = [];
         CardPile playPile = PileType.Play.GetPile(owner);
 
@@ -89,25 +160,31 @@ public static class CatalystCardPileActions
                 setAsideCards.Add(outgoingCard);
         }
 
-        await Cmd.CustomScaledWait(0.1f, 0.25f, false, default);
+        await StageOutgoingCards(setAsideCards);
 
         foreach (CardModel _ in setAsideCards)
             await DrawRandom(choiceContext, owner);
 
-        await Cmd.CustomScaledWait(0.1f, 0.25f, false, default);
-
         int switchedCount = 0;
-        foreach (CardModel outgoingCard in setAsideCards)
+        for (int index = 0; index < setAsideCards.Count; index++)
         {
+            CardModel outgoingCard = setAsideCards[index];
             if (await InsertIntoRandomDrawPile(outgoingCard))
             {
                 switchedCount++;
-                continue;
+            }
+            else
+            {
+                MainFile.Logger.Info(
+                    $"Warning: SwitchCards failed to reinsert card '{outgoingCard}' into Draw.",
+                    1);
             }
 
-            MainFile.Logger.Info(
-                $"Warning: SwitchCards failed to reinsert card '{outgoingCard}' into Draw.",
-                1);
+            if (index < setAsideCards.Count - 1)
+            {
+                float divisor = Math.Max(1, setAsideCards.Count - 1);
+                await Cmd.CustomScaledWait(0.05f / divisor, 0.125f / divisor);
+            }
         }
 
         return switchedCount;
