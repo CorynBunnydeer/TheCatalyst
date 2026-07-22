@@ -36,8 +36,8 @@ public class Catalyst : PlaceholderCharacterModel
         ModelDb.Card<DefendCatalyst>(),
         ModelDb.Card<DefendCatalyst>(),
         ModelDb.Card<DefendCatalyst>(),
-        ModelDb.Card<Switcheroo>(),
-        ModelDb.Card<Metabolize>(),
+        ModelDb.Card<FoxTrinkets>(),
+        ModelDb.Card<TheDoctorIsIn>(),
         ModelDb.Card<TailWhip>()
     ];
 

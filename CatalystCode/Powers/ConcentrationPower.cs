@@ -18,13 +18,14 @@ public enum ConcentrationEffectType
 
 public readonly record struct ConcentrationEffect(
     ConcentrationEffectType Type,
-    int Amount)
+    int Amount,
+    int SecondaryAmount = 0)
 {
     public static ConcentrationEffect GainGrow(int amount) =>
         new(ConcentrationEffectType.GainGrow, amount);
 
-    public static ConcentrationEffect FromTheEarth(int stackCount) =>
-        new(ConcentrationEffectType.FromTheEarth, stackCount);
+    public static ConcentrationEffect FromTheEarth(int growAmount, int levitateAmount) =>
+        new(ConcentrationEffectType.FromTheEarth, growAmount, levitateAmount);
 }
 
 /// <summary>
@@ -118,7 +119,7 @@ public class ConcentrationPower : CatalystPower, IAddDumbVariablesToPowerDescrip
                     await PowerCmd.Apply<FloatingPower>(
                         choiceContext,
                         enemy,
-                        effect.Amount * 2M,
+                        effect.SecondaryAmount,
                         Owner,
                         null,
                         false);
@@ -143,10 +144,19 @@ public class ConcentrationPower : CatalystPower, IAddDumbVariablesToPowerDescrip
                     new LocString("powers", "CATALYST-CONCENTRATION_EFFECT_GROW")
                         .With("Amount", effect.Amount),
                 ConcentrationEffectType.FromTheEarth =>
-                    new LocString("powers", "CATALYST-CONCENTRATION_EFFECT_FROM_THE_EARTH")
-                        .With("Amount", effect.Amount),
+                    DescribeFromTheEarth(effect),
                 _ => throw new ArgumentOutOfRangeException()
             }));
+    }
+
+    private static string DescribeFromTheEarth(ConcentrationEffect effect)
+    {
+        LocString description = new(
+            "powers",
+            "CATALYST-CONCENTRATION_EFFECT_FROM_THE_EARTH");
+        description.Add("Amount", effect.Amount);
+        description.Add("LevitateAmount", effect.SecondaryAmount);
+        return description.GetFormattedText();
     }
 }
 

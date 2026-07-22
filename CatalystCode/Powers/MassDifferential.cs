@@ -20,7 +20,9 @@ internal static class MassDifferential
     private const decimal VanillaShrinkDamageDecrease = 30M;
     private const decimal VanillaGrowDamageIncrease = 30M;
     private const double ScaleTweenSeconds = 0.75;
-    private const float VisualScalePerDoubling = 0.25F;
+    private const float VisualScalePerDoubling = 0.20F;
+    private const float VisualScaleSoftness = 4F;
+    private const int VisualScaleAnchorMass = 15;
 
     internal static async Task ReconcileOpposingStacks(
         PlayerChoiceContext choiceContext,
@@ -248,10 +250,30 @@ internal static class MassDifferential
         if (netMass == 0)
             return 1F;
 
-        float magnitude = 1F +
-            VisualScalePerDoubling * MathF.Log2(1F + Math.Abs(netMass));
+        int absoluteMass = Math.Abs(netMass);
+        float magnitude = 1F + CalculateVisualGrowth(absoluteMass);
 
         return netMass > 0 ? magnitude : 1F / magnitude;
+    }
+
+    private static float CalculateVisualGrowth(int absoluteMass)
+    {
+        float baselineGrowth =
+            VisualScalePerDoubling * MathF.Log2(1F + absoluteMass);
+
+        if (absoluteMass >= VisualScaleAnchorMass)
+            return baselineGrowth;
+
+        // Soften the log's lower range, then meet the ordinary 20%-per-doubling
+        // curve exactly at the anchor. Above the anchor, the baseline curve runs
+        // unchanged so high-Mass creatures retain their stronger visual payoff.
+        float anchorGrowth = VisualScalePerDoubling *
+            MathF.Log2(1F + VisualScaleAnchorMass);
+        float softenedProgress =
+            MathF.Log(1F + absoluteMass / VisualScaleSoftness) /
+            MathF.Log(1F + VisualScaleAnchorMass / VisualScaleSoftness);
+
+        return anchorGrowth * softenedProgress;
     }
 
     private static void ScaleCreature(Creature owner, float scale, double duration)

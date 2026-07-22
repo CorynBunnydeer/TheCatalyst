@@ -75,6 +75,15 @@ public class GrowPower : CatalystPower
             cardSource);
 
         MassDifferential.Refresh(Owner);
+
+        // The amount argument is the amount added to the power. Only positive
+        // Grow additions count; end-of-turn decay and Shrink changes do not.
+        if (power is GrowPower && amount > 0M)
+        {
+            PowerTripPower? powerTrip = Owner.GetPower<PowerTripPower>();
+            if (powerTrip is not null)
+                await powerTrip.OnGrowReceived(choiceContext, amount);
+        }
     }
 
     public override async Task AfterSideTurnEnd(

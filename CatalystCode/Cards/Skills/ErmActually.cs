@@ -37,7 +37,7 @@ public class ErmActually() : CatalystCard(
         if (selectedCard is null)
             return;
 
-        await CatalystMarkSystem.MarkCard(selectedCard);
+        //await CatalystMarkSystem.MarkCard(selectedCard); //This card used to also mark, but that forced its def to be very low; Transitioned to a simpler action with more block
         await CatalystCardPileActions.InsertIntoRandomDrawPile(selectedCard);
     }
 

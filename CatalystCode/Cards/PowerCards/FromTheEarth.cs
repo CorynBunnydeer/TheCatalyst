@@ -1,3 +1,4 @@
+using BaseLib.Extensions;
 using BaseLib.Utils;
 using Catalyst.CatalystCode.Cards.Infrastructure;
 using Catalyst.CatalystCode.Powers;
@@ -35,7 +36,9 @@ public class FromTheEarth() : CatalystCard(
         await ConcentrationCmd.Queue(
             choiceContext,
             Owner.Creature,
-            ConcentrationEffect.FromTheEarth(1),
+            ConcentrationEffect.FromTheEarth(
+                (int)DynamicVars.Power<GrowPower>().BaseValue,
+                (int)DynamicVars.Power<FloatingPower>().BaseValue),
             Owner.Creature,
             this);
     }
@@ -43,5 +46,6 @@ public class FromTheEarth() : CatalystCard(
     protected override void OnUpgrade()
     {
         EnergyCost.UpgradeBy(-1);
+        DynamicVars.Power<GrowPower>().UpgradeValueBy(1M);
     }
 }
